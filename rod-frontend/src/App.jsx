@@ -4,7 +4,7 @@ function App() {
 
   return (
     <>
-      <div>
+      <div className='text-red-800'>
         Test
       </div>
     </>
