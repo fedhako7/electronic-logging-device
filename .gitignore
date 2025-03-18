@@ -1,0 +1,16 @@
+
+.env
+resources
+.venv/
+venv/
+env/
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+pip-log.txt
+pip-delete-this-directory.txt
+
+local_settings.py
+*.env
