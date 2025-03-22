@@ -8,20 +8,22 @@ export default function LogSheet({ logs }) {
 
     const dutyStatuses = ['off_duty', 'driving', 'on_duty_non_driving'];
     const processedData = logs.map((log) => {
-      const hours = Array(25).fill(null); // 25 hours to match 24 intervals + pre-midnight
+      // 24 hours * 4 quarters = 96 segments
+      const quarters = Array(24 * 4).fill(null);
       const totals = { off_duty: 0, driving: 0, on_duty_non_driving: 0 };
 
       if (log.segments && Array.isArray(log.segments)) {
         log.segments.forEach((segment) => {
           const status = segment.status;
-          const start = Math.floor(segment.start);
-          const end = Math.ceil(segment.end);
+          // Convert start and end times to quarter indices (0-95)
+          const startQuarter = Math.floor(segment.start * 4);
+          const endQuarter = Math.ceil(segment.end * 4);
           const duration = segment.end - segment.start;
 
           if (dutyStatuses.includes(status)) {
             totals[status] += duration;
-            for (let h = start; h < end && h < 25; h++) {
-              hours[h] = status;
+            for (let q = startQuarter; q < endQuarter && q < 96; q++) {
+              quarters[q] = status;
             }
           }
         });
@@ -29,7 +31,7 @@ export default function LogSheet({ logs }) {
         console.warn(`No segments found for Day ${log.day}`);
       }
 
-      return { day: log.day, hours, totals };
+      return { day: log.day, quarters, totals };
     });
 
     setDutyData(processedData);
@@ -42,59 +44,73 @@ export default function LogSheet({ logs }) {
     on_duty_non_driving: 'bg-yellow-500',
   };
 
-  const hourLabels = Array.from({ length: 25 }, (_, i) => {
-    if (i === 0) return 'M.N';
-    if (i === 12) return 'Noon';
-    if (i === 24) return 'M.N';
+  const hourLabels = Array.from({ length: 24 }, (_, i) => {
+    if (i === 0) return 'mid night';
+    if (i === 12) return 'noon';
     return i;
   });
 
+  // Helper function to get quarters for a specific hour
+  const getHourQuarters = (quarters, hour) => {
+    const startIdx = hour * 4;
+    return quarters.slice(startIdx, startIdx + 4);
+  };
+
   return (
-    <div className="bg-gray-700 p-6 rounded-lg shadow-lg">
+    <div className="p-6 rounded-lg shadow-lg mb-28">
       <h2 className="text-xl font-semibold text-white mb-4">Driver Log Sheet</h2>
-      <div className="max-h-[600px] overflow-auto">
+      <div className="max-h-[640px] overflow-auto">
         {dutyData.map((dayData, dayIndex) => (
-          <div key={dayData.day} className="mb-6">
+          <div key={dayData.day} className="bg-gray-700 py-8 px-6 mb-6 min-w-[1000px]">
             <h3 className="text-white font-semibold mb-2">Day {dayData.day}</h3>
             <div className="relative">
-              {/* Time labels above the table, aligned with separators */}
-              <div className="flex text-white text-xs mb-1">
-                <span className="w-32" /> {/* Offset for Duty Status column */}
-                {hourLabels.map((label, i) => (
-                  <span key={i} className="w-10 text-left">
-                    {label}
-                  </span>
-                ))}
-                <span className="w-20" /> {/* Offset for Total Hours column */}
-              </div>
               <table className="w-full border-collapse text-sm text-white">
-                <thead>
-                  <tr>
-                    <th className="border border-gray-600 p-2 w-32">Duty Status</th>
-                    {Array.from({ length: 25 }).map((_, i) => (
-                      <th key={i} className="border border-gray-600 p-2 w-10" />
-                    ))}
-                    <th className="border border-gray-600 p-2 w-20">Total Hours</th>
-                  </tr>
-                </thead>
                 <tbody>
+                  {/* Row for Duty Status labels */}
+                  <tr>
+                    <td className="border border-gray-600 p-2 w-32">Duty Status</td>
+                    {Array.from({ length: 24 }).map((_, hour) => (
+                      <td
+                        key={hour}
+                        className="border border-gray-600 p-2 w-10 text-center"
+                      >
+                        {hourLabels[hour]}
+                      </td>
+                    ))}
+                    <td className="border border-gray-600 p-2 w-20 text-center">
+                      Total Hours
+                    </td>
+                  </tr>
+                  {/* Rows for each duty status */}
                   {dutyStatuses.map((status) => (
                     <tr key={status}>
                       <td className="border border-gray-600 p-2 text-left">
                         {status.replace('_', ' ')}
                       </td>
-                      {Array.from({ length: 25 }).map((_, hour) => (
-                        <td
-                          key={hour}
-                          className={`border border-gray-600 p-1 ${
-                            dayData.hours[hour] === status ? statusColors[status] : 'bg-transparent'
-                          }`}
-                        >
-                          {dayData.hours[hour] === status && (
-                            <div className="h-4 w-full bg-black opacity-50" />
-                          )}
-                        </td>
-                      ))}
+                      {Array.from({ length: 24 }).map((_, hour) => {
+                        const hourQuarters = getHourQuarters(dayData.quarters, hour);
+                        return (
+                          <td
+                            key={hour}
+                            className="border border-gray-600 py-1 relative h-6"
+                          >
+                            <div className="flex w-full h-full">
+                              {hourQuarters.map((qStatus, qIdx) => (
+                                <div
+                                  key={qIdx}
+                                  className={`flex items-center w-1/4 h-full ${
+                                    qStatus === status ? statusColors[status] : 'bg-transparent'
+                                  }`}
+                                >
+                                  {qStatus === status && (
+                                    <div className=" flex  h-1 w-full bg-black opacity-80" />
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </td>
+                        );
+                      })}
                       <td className="border border-gray-600 p-2 text-center">
                         {dayData.totals[status].toFixed(2)}
                       </td>
