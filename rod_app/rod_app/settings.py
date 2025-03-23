@@ -77,7 +77,8 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Your frontend origin
+    "https://fedesaeld.vercel.app/"
+    "http://localhost:5173", 
 ]
 CORS_ALLOW_METHODS = [
     "GET",
