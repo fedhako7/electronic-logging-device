@@ -34,7 +34,7 @@ class TripAPIView(APIView):
 
         url = f"http://router.project-osrm.org/route/v1/driving/{coords}?overview=full"
         try:
-            response = requests.get(url, timeout=300).json()
+            response = requests.get(url, timeout=20).json()
             if response.get("code") != "Ok" or "routes" not in response:
                 return Response({"error": "OSRM API failed", "details": response}, status=500)
 
