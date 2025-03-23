@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import axiosInstance from '../api/api';
+import ClipLoader from "react-spinners/ClipLoader";
 
 export default function TripForm({ onSubmit }) {
   const [form, setForm] = useState({ current: '', pickup: '', dropoff: '', cycle: '' });
@@ -124,10 +125,10 @@ export default function TripForm({ onSubmit }) {
       </div>
       <button
         type="submit"
-        className="w-full p-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors duration-200 disabled:bg-gray-400"
+        className="flex items-center justify-center gap-1 w-full p-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors duration-200 disabled:bg-gray-400"
         disabled={loading}
       >
-        {loading ? 'Loading...' : 'Calculate Route'}
+        {loading ? <> <ClipLoader speedMultiplier={0.5} size={20} color='white' /> Please wait... </>: 'Calculate Route'}
       </button>
     </form>
   );

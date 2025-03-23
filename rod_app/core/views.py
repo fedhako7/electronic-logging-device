@@ -34,7 +34,7 @@ class TripAPIView(APIView):
 
         url = f"http://router.project-osrm.org/route/v1/driving/{coords}?overview=full"
         try:
-            response = requests.get(url, timeout=160).json()
+            response = requests.get(url, timeout=300).json()
             if response.get("code") != "Ok" or "routes" not in response:
                 return Response({"error": "OSRM API failed", "details": response}, status=500)
 
@@ -58,7 +58,7 @@ class TripAPIView(APIView):
         dropoff_time = 1  # 1 hr for dropoff
         fuel_stops = total_dist // 1000  # At least once every 1,000 miles
         fuel_time = fuel_stops * 0.5
-        required_time = total_time + pickup_time + dropoff_time + fuel_time  # Driving + duty time
+        required_time = total_time + pickup_time + dropoff_time + fuel_time 
         available_cycle = 70 - cycle_used
 
         if required_time > available_cycle:
