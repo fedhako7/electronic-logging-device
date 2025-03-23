@@ -16,7 +16,7 @@ class TripAPIView(APIView):
         except (KeyError, ValueError) as e:
             return Response({"error": f"Invalid input: {str(e)}"}, status=400)
 
-        geolocator = Nominatim(user_agent="rod_app")
+        geolocator = Nominatim(user_agent="rod_app", timeout=10)
 
         try:
             current_loc = geolocator.geocode(current)
