@@ -81,7 +81,12 @@ class TripAPIView(APIView):
                 "current_to_pickup_distance": round(current_to_pickup_dist, 2),
                 "pickup_to_dropoff_distance": round(pickup_to_dropoff_dist, 2),
                 "time": round(total_time, 2),
-                "path": path
+                "path": path,
+                "locations": {
+                    "current": {"lat": current_loc.latitude, "lon": current_loc.longitude},
+                    "pickup": {"lat": pickup_loc.latitude, "lon": pickup_loc.longitude},
+                    "dropoff": {"lat": dropoff_loc.latitude, "lon": dropoff_loc.longitude}
+                },
             },
             "logs": days
         })
